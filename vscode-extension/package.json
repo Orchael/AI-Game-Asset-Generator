@@ -1,0 +1,75 @@
+{
+  "name": "cursor-asset-generator",
+  "displayName": "Game Asset Generator for Cursor",
+  "description": "AI-powered game asset generation integrated with Cursor AI",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:cursor-asset-generator.generate",
+    "onCommand:cursor-asset-generator.configure"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cursor-asset-generator.generate",
+        "title": "Generate Game Asset",
+        "category": "Cursor Asset Generator"
+      },
+      {
+        "command": "cursor-asset-generator.configure",
+        "title": "Configure Asset Generator",
+        "category": "Cursor Asset Generator"
+      }
+    ],
+    "configuration": {
+      "title": "Game Asset Generator",
+      "properties": {
+        "cursor-asset-generator.huggingfaceToken": {
+          "type": "string",
+          "default": "",
+          "description": "Your Hugging Face API token"
+        },
+        "cursor-asset-generator.outputDirectory": {
+          "type": "string",
+          "default": "assets/generated",
+          "description": "Directory where generated assets will be saved"
+        },
+        "cursor-asset-generator.defaultStyle": {
+          "type": "string",
+          "default": "realistic",
+          "enum": [
+            "realistic",
+            "anime",
+            "pixel",
+            "lowpoly",
+            "handdrawn",
+            "scifi",
+            "fantasy",
+            "cyberpunk"
+          ],
+          "description": "Default style for generated assets"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^16.11.7",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+} 
