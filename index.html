@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Asset Generator Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body class="gradient-bg text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold mb-4 float">Game Asset Generator</h1>
+            <p class="text-gray-400">Create stunning game assets using AI technology</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <button id="cursorImport" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center">
+                    <i class="fas fa-file-import mr-2"></i>Import Cursor Project
+                </button>
+                <button id="cursorExport" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center">
+                    <i class="fas fa-file-export mr-2"></i>Export to Cursor
+                </button>
+            </div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- Settings Panel -->
+            <div class="glass-effect rounded-lg p-6 shadow-xl mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Settings</h2>
+                    <div class="flex space-x-2">
+                        <button id="saveSettings" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm">
+                            <i class="fas fa-save mr-1"></i>Save Settings
+                        </button>
+                        <button id="clearHistory" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm">
+                            <i class="fas fa-trash mr-1"></i>Clear History
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">
+                        <i class="fas fa-key mr-2"></i>Hugging Face API Token
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="apiToken" class="w-full custom-input rounded-md p-3 text-white pr-10" 
+                            placeholder="Enter your Hugging Face API token">
+                        <button id="toggleToken" class="absolute right-3 top-3 text-gray-400 hover:text-white">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-1">Get your free token at <a href="https://huggingface.co/settings/tokens" target="_blank" class="text-blue-400 hover:text-blue-300">huggingface.co</a></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fas fa-shapes mr-2"></i>Asset Type
+                        </label>
+                        <select id="assetType" class="w-full custom-input rounded-md p-3 text-white">
+                            <option value="character">Character</option>
+                            <option value="item">Item</option>
+                            <option value="environment">Environment</option>
+                            <option value="weapon">Weapon</option>
+                            <option value="vehicle">Vehicle</option>
+                            <option value="building">Building</option>
+                            <option value="creature">Creature</option>
+                            <option value="prop">Prop</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fas fa-paint-brush mr-2"></i>Style Preset
+                        </label>
+                        <select id="stylePreset" class="w-full custom-input rounded-md p-3 text-white">
+                            <option value="realistic">Realistic</option>
+                            <option value="anime">Anime Style</option>
+                            <option value="pixel">Pixel Art</option>
+                            <option value="lowpoly">Low Poly</option>
+                            <option value="handdrawn">Hand Drawn</option>
+                            <option value="scifi">Sci-Fi</option>
+                            <option value="fantasy">Fantasy</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generation Panel -->
+            <div class="glass-effect rounded-lg p-6 shadow-xl mb-8">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">
+                        <i class="fas fa-pencil-alt mr-2"></i>Description
+                    </label>
+                    <textarea id="prompt" rows="3" class="w-full custom-input rounded-md p-3 text-white" 
+                        placeholder="Describe your game asset (e.g., 'A magical sword with glowing blue runes')"></textarea>
+                    <div class="flex justify-between mt-2">
+                        <button id="randomPrompt" class="text-sm text-blue-400 hover:text-blue-300">
+                            <i class="fas fa-random mr-1"></i>Random Example
+                        </button>
+                        <span id="charCount" class="text-sm text-gray-400">0/500</span>
+                    </div>
+                </div>
+                
+                <button id="generateBtn" class="w-full btn-glow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-magic mr-2"></i>Generate Asset
+                </button>
+            </div>
+            
+            <!-- Result Panel -->
+            <div id="result" class="glass-effect rounded-lg p-6 shadow-xl mb-8 hidden">
+                <h2 class="text-xl font-bold mb-4">Generated Asset</h2>
+                <div id="imageContainer" class="w-full aspect-square bg-gray-800 rounded-lg overflow-hidden mb-4">
+                    <img id="generatedImage" class="w-full h-full object-cover" src="" alt="Generated asset">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="downloadBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                        <i class="fas fa-download mr-2"></i>Download
+                    </button>
+                    <button id="regenerateBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                        <i class="fas fa-redo mr-2"></i>Regenerate
+                    </button>
+                    <button id="shareBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                        <i class="fas fa-share mr-2"></i>Share
+                    </button>
+                </div>
+            </div>
+            
+            <!-- History Panel -->
+            <div id="history" class="glass-effect rounded-lg p-6 shadow-xl hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Generation History</h2>
+                    <div class="flex space-x-2">
+                        <select id="historyFilter" class="bg-gray-800 rounded-md px-3 py-1 text-sm">
+                            <option value="all">All Types</option>
+                            <option value="character">Characters</option>
+                            <option value="item">Items</option>
+                            <option value="environment">Environments</option>
+                            <option value="weapon">Weapons</option>
+                            <option value="vehicle">Vehicles</option>
+                        </select>
+                        <button id="exportHistory" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-sm">
+                            <i class="fas fa-file-export mr-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div id="historyGrid" class="masonry-grid">
+                    <!-- History items will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="glass-effect rounded-lg p-8 text-center">
+                <div class="spinner mb-4"></div>
+                <p>Creating your masterpiece...</p>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="glass-effect rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Share Asset</h3>
+                    <button id="closeShareModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Direct Link</label>
+                        <input type="text" id="shareLink" class="w-full custom-input rounded-md p-2" readonly>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md" onclick="copyShareLink()">
+                            <i class="fas fa-copy mr-2"></i>Copy Link
+                        </button>
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md" onclick="downloadAsset()">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cursor Integration Modal -->
+        <div id="cursorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="glass-effect rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Cursor Integration</h3>
+                    <button id="closeCursorModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h4 class="font-bold mb-2">Import from Cursor</h4>
+                        <p class="text-sm text-gray-400 mb-2">Import assets and settings from a Cursor project</p>
+                        <input type="file" id="cursorConfigFile" accept=".json" class="hidden">
+                        <button onclick="document.getElementById('cursorConfigFile').click()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">
+                            <i class="fas fa-folder-open mr-2"></i>Choose Config File
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h4 class="font-bold mb-2">Export to Cursor</h4>
+                        <p class="text-sm text-gray-400 mb-2">Export your assets in Cursor-compatible format</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="exportSettings" class="mr-2" checked>
+                                <span>Include Settings</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="exportHistory" class="mr-2" checked>
+                                <span>Include History</span>
+                            </label>
+                        </div>
+                        <button id="exportToCursor" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md mt-2">
+                            <i class="fas fa-download mr-2"></i>Export Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/cursor-integration.js"></script>
+    <script>
+        // Initialize Cursor integration
+        const cursorIntegration = new CursorIntegration();
+
+        // Setup Cursor integration UI
+        document.getElementById('cursorImport').addEventListener('click', () => {
+            document.getElementById('cursorModal').classList.remove('hidden');
+        });
+
+        document.getElementById('cursorExport').addEventListener('click', () => {
+            document.getElementById('cursorModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeCursorModal').addEventListener('click', () => {
+            document.getElementById('cursorModal').classList.add('hidden');
+        });
+
+        document.getElementById('cursorConfigFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    await cursorIntegration.importFromCursor(file);
+                    showNotification('Successfully imported Cursor project', 'success');
+                    document.getElementById('cursorModal').classList.add('hidden');
+                } catch (error) {
+                    showNotification('Failed to import Cursor project', 'error');
+                }
+            }
+        });
+
+        document.getElementById('exportToCursor').addEventListener('click', async () => {
+            const includeSettings = document.getElementById('exportSettings').checked;
+            const includeHistory = document.getElementById('exportHistory').checked;
+            
+            try {
+                const assets = includeHistory ? app.history : [];
+                await cursorIntegration.exportToCursor(assets);
+                showNotification('Successfully exported to Cursor format', 'success');
+                document.getElementById('cursorModal').classList.add('hidden');
+            } catch (error) {
+                showNotification('Failed to export to Cursor format', 'error');
+            }
+        });
+    </script>
+</body>
+</html> 
